@@ -21,19 +21,53 @@ public class IBDMS_Server {
         
         try{
                 //Creates a server socket 
-            int serverPort=7896; 
+            int serverPort=8888; 
             ServerSocket listenSocket=new ServerSocket(serverPort); 
             
-		//while loop that listents for any new connections	
+		//while loop that listents for any new connection, when a client attempts a connection and is sucessfull, the conection class will create a new thread
             while(true) {
                 Socket clientSocket=listenSocket.accept();
                 Connection c = new Connection(clientSocket);
-                System.out.printf("\nServer waiting on: %d for client from %d ",
-                listenSocket.getLocalPort(),clientSocket.getPort() );
+                
             }
-            // if the try statement fails 
+            // An exception to catch a failed try statement
           } catch(IOException e) { 
               System.out.println("Listen :"+e.getMessage());}           
           }
     
+}
+
+// connection class
+class Connection extends Thread {
+
+    DataInputStream in;
+    DataOutputStream out;
+    Socket clientSocket;
+
+    public Connection(Socket aClientSocket) {
+        try {
+            clientSocket = aClientSocket;
+            in = new DataInputStream(clientSocket.getInputStream());
+            out = new DataOutputStream(clientSocket.getOutputStream());
+            this.start();
+        } catch (IOException e) {
+            System.out.println("Connection:" + e.getMessage());
+        }
+    }
+
+    public void run() {
+        try { // an echo server
+            String data = in.readUTF();
+            out.writeUTF(data);
+        } catch (EOFException e) {
+            System.out.println("EOF:" + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("IO:" + e.getMessage());
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {/*close failed*/
+            }
+        }
+    }
 }
