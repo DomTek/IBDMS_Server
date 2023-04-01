@@ -1,48 +1,31 @@
-
 package ibdms_server;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 
 public class DroneControllRoom extends JPanel {
-    
     private Image backgroundImage;
-    
+    JTextArea messageOutputText = new JTextArea();
+
     public DroneControllRoom() {
         // Load the background image
         backgroundImage = new ImageIcon("background.jpg").getImage();
-        
+
         // Set the panel size to match the background image size
         setPreferredSize(getBackgroundImageSize());
     }
-    
+
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+       super.paintComponent(g);
         
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
         
-        // Draw a blue rectangle on the background image
+        //Draw a blue rectangle on the background image        
         g.setColor(Color.BLUE);
         g.fillRect(300, 200, 50, 25);
         g.setColor(Color.WHITE);
@@ -71,17 +54,27 @@ public class DroneControllRoom extends JPanel {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 10));
         g.drawString("Drone 03", 400, 310);
-        
-
     }
-    
+
     private java.awt.Dimension getBackgroundImageSize() {
         return new java.awt.Dimension(backgroundImage.getWidth(null), backgroundImage.getHeight(null));
     }
 
+    public void appendMessage(String message) {
+        messageOutputText.append(message + "\n");
+    }
+
     public static void main(String[] args) {
-        
-        ArrayList<String> droneList = new ArrayList<String>();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                createAndShowGUI();
+            }
+        });
+    }
+
+    public static void createAndShowGUI() {
+               ArrayList<String> droneList = new ArrayList<String>();
         droneList.add("Drone 1");
         droneList.add("Drone 2");
         droneList.add("Drone 3");
@@ -118,9 +111,7 @@ public class DroneControllRoom extends JPanel {
         JComboBox<String> droneListDisplay = new JComboBox<String>(droneList.toArray(new String[0]));
         JComboBox<String> fireListDisplay = new JComboBox<String>(fireList.toArray(new String[0]));
 
-        
-        
-        
+               
         JFrame frame = new JFrame("Display Objects on Background");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
@@ -219,9 +210,7 @@ public class DroneControllRoom extends JPanel {
         leftPanel.add(messageOutputText, gbc);
         messageOutputText.setPreferredSize(new Dimension(200, 200));        
         
-        
-
-        
+               
         
         gbc.gridx=0;
         gbc.gridy=11;
@@ -234,5 +223,61 @@ public class DroneControllRoom extends JPanel {
         
         frame.pack();
         frame.setVisible(true);
+
+        DroneControllRoom droneControlRoomInstance = new DroneControllRoom();
+        frame.add(droneControlRoomInstance, BorderLayout.CENTER);
+
+        // ...
+
+        frame.pack();
+        frame.setVisible(true);
+
+        try {
+            int serverPort = 8888;
+            ServerSocket listenSocket = new ServerSocket(serverPort);
+
+            while (true) {
+                Socket clientSocket = listenSocket.accept();
+                Connection c = new Connection(clientSocket, droneControlRoomInstance);
+            }
+        } catch (IOException e) {
+            System.out.println("Listen :" + e.getMessage());
+        }
+    }
+}
+
+class Connection extends Thread {
+    DataInputStream in;
+    DataOutputStream out;
+    Socket clientSocket;
+    DroneControllRoom droneControlRoom;
+
+    public Connection(Socket aClientSocket, DroneControllRoom droneControlRoom) {
+        try {
+            clientSocket = aClientSocket;
+            in = new DataInputStream(clientSocket.getInputStream());
+            out = new DataOutputStream(clientSocket.getOutputStream());
+            this.droneControlRoom = droneControlRoom;
+            this.start();
+        } catch (IOException e) {
+            droneControlRoom.appendMessage("Connection:" + e.getMessage());
+        }
+    }
+
+    public void run() {
+        try {
+            String data = in.readUTF();
+            out.writeUTF(data);
+            droneControlRoom.appendMessage(data);
+        } catch (EOFException e) {
+           droneControlRoom.appendMessage("EOF:" + e.getMessage());
+        } catch (IOException e) {
+            droneControlRoom.appendMessage("IO:" + e.getMessage());
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+            }
+        }
     }
 }
