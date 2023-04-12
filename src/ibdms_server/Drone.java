@@ -2,19 +2,27 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+package ibdms_server;
+
+import java.io.*;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 
 /**
  *
  * @author Nighthawk
  */
-public class Drones {
+public class Drone implements Serializable{
     
    private int ID;
    private String name;
    private int posX;
    private int posY;    
 
-    public Drones(int ID, String name, int posX, int posY) {
+    public Drone(int ID, String name, int posX, int posY) {
         this.ID = ID;
         this.name = name;
         this.posX = posX;

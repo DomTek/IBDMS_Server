@@ -65,6 +65,7 @@ public class DroneControllRoom extends JPanel {
     }
 
     public static void main(String[] args) {
+        
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -103,6 +104,7 @@ public class DroneControllRoom extends JPanel {
         JTextField yCorTextField = new JTextField();
         
         JTextArea messageOutputText = new JTextArea();
+        
         
         
         JSeparator separator = new JSeparator();
@@ -244,6 +246,7 @@ public class DroneControllRoom extends JPanel {
             System.out.println("Listen :" + e.getMessage());
         }
     }
+    
 }
 
 class Connection extends Thread {
@@ -267,8 +270,17 @@ class Connection extends Thread {
     public void run() {
         try {
             String data = in.readUTF();
-            out.writeUTF(data);
-            droneControlRoom.appendMessage(data);
+            System.out.println(data);
+            if(data.equals("New Drone")) {
+                System.out.println("there is a new drone");
+                ArrayList<Drone> droneList = new ArrayList<>();
+                newDrone(droneList);
+                        }
+            else
+                System.out.println("no new drone found");
+            
+            out.writeUTF("completed");
+         //   droneControlRoom.appendMessage(data);            
         } catch (EOFException e) {
            droneControlRoom.appendMessage("EOF:" + e.getMessage());
         } catch (IOException e) {
@@ -279,5 +291,24 @@ class Connection extends Thread {
             } catch (IOException e) {
             }
         }
+
     }
+//
+//    public static void newDrone() {
+//        String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
+//        int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
+//        int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drones X position:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
+//        int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drones Y position:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
+//        Drone droneOne = new Drone(droneID, droneName, posX, posY);
+//    }
+    
+    public static void newDrone(ArrayList<Drone> droneList) {
+        String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
+        int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
+        int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's X position:", "Drone X Position", JOptionPane.QUESTION_MESSAGE));
+        int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's Y position:", "Drone Y Position", JOptionPane.QUESTION_MESSAGE));
+        Drone newDrone = new Drone(droneID, droneName, posX, posY);
+        droneList.add(newDrone);
+    }
+
 }
