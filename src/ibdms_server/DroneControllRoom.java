@@ -211,8 +211,7 @@ public class DroneControllRoom extends JPanel {
         gbc.gridy=10;
         leftPanel.add(messageOutputText, gbc);
         messageOutputText.setPreferredSize(new Dimension(200, 200));        
-        
-               
+                       
         
         gbc.gridx=0;
         gbc.gridy=11;
@@ -222,9 +221,7 @@ public class DroneControllRoom extends JPanel {
         gbc.gridy=11;
         leftPanel.add(ShutDownB, gbc);
         
-        
-        frame.pack();
-        frame.setVisible(true);
+       
 
         DroneControllRoom droneControlRoomInstance = new DroneControllRoom();
         frame.add(droneControlRoomInstance, BorderLayout.CENTER);
@@ -302,6 +299,8 @@ class Connection extends Thread {
 //        Drone droneOne = new Drone(droneID, droneName, posX, posY);
 //    }
     
+    
+    // This methodes calls for the popups for the user to define the Drones ID, Name and current position. This is then Stored in an Array list
     public static void newDrone(ArrayList<Drone> droneList) {
         String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
         int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
