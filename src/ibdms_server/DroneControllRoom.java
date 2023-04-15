@@ -19,6 +19,7 @@ public class DroneControllRoom extends JPanel {
         // Set the panel size to match the background image size
         setPreferredSize(getBackgroundImageSize());
     }
+    ArrayList<Drone> droneList = new ArrayList<>();
 
     @Override
     public void paintComponent(Graphics g) {
@@ -27,20 +28,6 @@ public class DroneControllRoom extends JPanel {
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
 
-        //Draw a blue rectangle on the background image        
-        g.setColor(Color.BLUE);
-        g.fillRect(300, 200, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 02", 300, 210);
-
-        // Draw a blue rectangle on the background image
-        g.setColor(Color.BLUE);
-        g.fillRect(200, 100, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 01", 200, 110);
-
         // Draw a red circle with text on the background image
         g.setColor(Color.RED);
         g.fillOval(350, 300, 50, 50);
@@ -48,14 +35,34 @@ public class DroneControllRoom extends JPanel {
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         g.drawString("Fire", 355, 330);
 
-        // Draw a blue rectangle on the background image
-        g.setColor(Color.BLUE);
-        g.fillRect(400, 300, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 03", 400, 310);
+  
+        int index = 0;
+
+        while (index < droneList.size()) {
+            Drone drone = droneList.get(index);
+            String name = drone.getName();
+            int posX = drone.getPosX();
+            int posY = drone.getPosY();
+
+            g.setColor(Color.BLUE);
+            g.fillRect(300, 200, 50, 25);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 10));
+            g.drawString(name, posX, posY);
+
+            index++;
+        }
+
     }
 
+//     public static void droneLocationDisplay(ArrayList<Drone> droneList){
+//        int index = 0;
+//        Drone drone = droneList.get(index);
+//        String name = drone.getName();
+//        int posX = drone.getPosX();
+//        int posY = drone.getPosY();
+//        
+//    }
     private java.awt.Dimension getBackgroundImageSize() {
         return new java.awt.Dimension(backgroundImage.getWidth(null), backgroundImage.getHeight(null));
     }
@@ -289,7 +296,8 @@ class Connection extends Thread {
         Drone newDrone = new Drone(droneID, droneName, posX, posY);
         droneList.add(newDrone);
         DroneControllRoom classObj = new DroneControllRoom();
-        classObj.addMessage("New Drone " + droneName + " has been added");
+        classObj.addMessage("New Drone " + droneName + " Has been added!");
+
     }
 
 }
