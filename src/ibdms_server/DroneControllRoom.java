@@ -1,4 +1,3 @@
-
 package ibdms_server;
 
 import java.awt.Color;
@@ -16,13 +15,11 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 public class DroneControllRoom extends JPanel {
-     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
-             // Create new Drone objects
-        
+
+    ArrayList<Drone> droneListArray = new ArrayList<Drone>();
+    // Create new Drone objects
 
 // Add Drone objects to the ArrayList
-       
-
     private Image backgroundImage;
 
     public DroneControllRoom() {
@@ -37,15 +34,11 @@ public class DroneControllRoom extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        
-        
-        
-        
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
         Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
         Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
-        
+
         // Add Drone objects to the ArrayList
         droneListArray.add(drone1);
         droneListArray.add(drone2);
@@ -58,18 +51,13 @@ public class DroneControllRoom extends JPanel {
             int posX = drone.getPosX();
             int posY = drone.getPosY();
 
-                        
             g.setFont(new Font("Arial", Font.PLAIN, 10));
             g.drawString(name, posX, posY);
-           g.fillRect(300, 200, 50, 25);
+            g.fillRect(300, 200, 50, 25);
             g.setColor(Color.WHITE);
 
             index++;
         }
-
-        
-
-       
 
 // Draw a red circle with text on the background image
         g.setColor(Color.RED);
@@ -78,8 +66,6 @@ public class DroneControllRoom extends JPanel {
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         g.drawString("Fire", 355, 330);
 
-     
-
     }
 
     private java.awt.Dimension getBackgroundImageSize() {
@@ -87,9 +73,6 @@ public class DroneControllRoom extends JPanel {
     }
 
     public static void main(String[] args) {
-        
-       
-
 
         createAndShowGUI();
     }
@@ -246,11 +229,6 @@ public class DroneControllRoom extends JPanel {
 
     }
 
-
-
-
-
-
 }
 
 class Connection extends Thread {
@@ -277,6 +255,7 @@ class Connection extends Thread {
             String data = in.readUTF();
             // System.out.println(data);
             out.writeUTF("Server received:" + data);
+            System.out.println(data);
 
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
@@ -290,4 +269,3 @@ class Connection extends Thread {
         }
     }
 }
-
