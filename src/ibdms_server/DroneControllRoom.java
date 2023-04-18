@@ -16,6 +16,12 @@ import java.util.ArrayList;
 import javax.swing.*;
 
 public class DroneControllRoom extends JPanel {
+     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
+             // Create new Drone objects
+        
+
+// Add Drone objects to the ArrayList
+       
 
     private Image backgroundImage;
 
@@ -31,22 +37,39 @@ public class DroneControllRoom extends JPanel {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        
+        
+        
+        
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
+        Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
+        Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
+        
+        // Add Drone objects to the ArrayList
+        droneListArray.add(drone1);
+        droneListArray.add(drone2);
 
-        // Draw a blue rectangle on the background image
-        g.setColor(Color.BLUE);
-        g.fillRect(300, 200, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 02", 300, 210);
+        int index = 0;
 
-        // Draw a blue rectangle on the background image
-        g.setColor(Color.BLUE);
-        g.fillRect(200, 100, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 01", 200, 110);
+        while (index < droneListArray.size()) {
+            Drone drone = droneListArray.get(index);
+            String name = drone.getName();
+            int posX = drone.getPosX();
+            int posY = drone.getPosY();
+
+                        
+            g.setFont(new Font("Arial", Font.PLAIN, 10));
+            g.drawString(name, posX, posY);
+           g.fillRect(300, 200, 50, 25);
+            g.setColor(Color.WHITE);
+
+            index++;
+        }
+
+        
+
+       
 
 // Draw a red circle with text on the background image
         g.setColor(Color.RED);
@@ -55,12 +78,7 @@ public class DroneControllRoom extends JPanel {
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         g.drawString("Fire", 355, 330);
 
-        // Draw a blue rectangle on the background image
-        g.setColor(Color.BLUE);
-        g.fillRect(400, 300, 50, 25);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 10));
-        g.drawString("Drone 03", 400, 310);
+     
 
     }
 
@@ -69,6 +87,10 @@ public class DroneControllRoom extends JPanel {
     }
 
     public static void main(String[] args) {
+        
+       
+
+
         createAndShowGUI();
     }
 
@@ -224,6 +246,11 @@ public class DroneControllRoom extends JPanel {
 
     }
 
+
+
+
+
+
 }
 
 class Connection extends Thread {
@@ -263,3 +290,4 @@ class Connection extends Thread {
         }
     }
 }
+
