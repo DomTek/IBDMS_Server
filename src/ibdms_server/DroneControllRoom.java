@@ -1,16 +1,23 @@
+
 package ibdms_server;
 
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.*;
-import java.io.*;
+import java.awt.Image;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class DroneControllRoom extends JPanel {
 
     private Image backgroundImage;
-    JTextArea messageOutputText = new JTextArea();
 
     public DroneControllRoom() {
         // Load the background image
@@ -19,7 +26,6 @@ public class DroneControllRoom extends JPanel {
         // Set the panel size to match the background image size
         setPreferredSize(getBackgroundImageSize());
     }
-    ArrayList<Drone> droneList = new ArrayList<>();
 
     @Override
     public void paintComponent(Graphics g) {
@@ -28,57 +34,42 @@ public class DroneControllRoom extends JPanel {
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
 
-        // Draw a red circle with text on the background image
+        // Draw a blue rectangle on the background image
+        g.setColor(Color.BLUE);
+        g.fillRect(300, 200, 50, 25);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 10));
+        g.drawString("Drone 02", 300, 210);
+
+        // Draw a blue rectangle on the background image
+        g.setColor(Color.BLUE);
+        g.fillRect(200, 100, 50, 25);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 10));
+        g.drawString("Drone 01", 200, 110);
+
+// Draw a red circle with text on the background image
         g.setColor(Color.RED);
         g.fillOval(350, 300, 50, 50);
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         g.drawString("Fire", 355, 330);
 
-  
-        int index = 0;
-
-        while (index < droneList.size()) {
-            Drone drone = droneList.get(index);
-            String name = drone.getName();
-            int posX = drone.getPosX();
-            int posY = drone.getPosY();
-
-            g.setColor(Color.BLUE);
-            g.fillRect(300, 200, 50, 25);
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.PLAIN, 10));
-            g.drawString(name, posX, posY);
-
-            index++;
-        }
+        // Draw a blue rectangle on the background image
+        g.setColor(Color.BLUE);
+        g.fillRect(400, 300, 50, 25);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 10));
+        g.drawString("Drone 03", 400, 310);
 
     }
 
-//     public static void droneLocationDisplay(ArrayList<Drone> droneList){
-//        int index = 0;
-//        Drone drone = droneList.get(index);
-//        String name = drone.getName();
-//        int posX = drone.getPosX();
-//        int posY = drone.getPosY();
-//        
-//    }
     private java.awt.Dimension getBackgroundImageSize() {
         return new java.awt.Dimension(backgroundImage.getWidth(null), backgroundImage.getHeight(null));
     }
 
-    public void appendMessage(String message) {
-        messageOutputText.append(message + "\n");
-    }
-
     public static void main(String[] args) {
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        createAndShowGUI();
     }
 
     public static void createAndShowGUI() {
@@ -214,28 +205,23 @@ public class DroneControllRoom extends JPanel {
         gbc.gridy = 11;
         leftPanel.add(ShutDownB, gbc);
 
-        DroneControllRoom droneControlRoomInstance = new DroneControllRoom();
-        frame.add(droneControlRoomInstance, BorderLayout.CENTER);
-
         frame.pack();
         frame.setVisible(true);
 
         try {
-            int serverPort = 8888;
-            ServerSocket listenSocket = new ServerSocket(serverPort);
 
+            int serverPort = 7896;
+            ServerSocket listenSocket = new ServerSocket(serverPort);
             while (true) {
                 Socket clientSocket = listenSocket.accept();
-                Connection c = new Connection(clientSocket, droneControlRoomInstance);
+                Connection c = new Connection(clientSocket);
+                System.out.printf("\nServer waiting on: %d for client from %d ",
+                        listenSocket.getLocalPort(), clientSocket.getPort());
             }
         } catch (IOException e) {
             System.out.println("Listen :" + e.getMessage());
         }
 
-    }
-
-    public void addMessage(String message) {
-        messageOutputText.append(message + "\n");
     }
 
 }
@@ -245,59 +231,35 @@ class Connection extends Thread {
     DataInputStream in;
     DataOutputStream out;
     Socket clientSocket;
-    DroneControllRoom droneControlRoom;
 
-    public Connection(Socket aClientSocket, DroneControllRoom droneControlRoom) {
+    public Connection(Socket aClientSocket) {
         try {
             clientSocket = aClientSocket;
-            in = new DataInputStream(clientSocket.getInputStream());
-            out = new DataOutputStream(clientSocket.getOutputStream());
-            this.droneControlRoom = droneControlRoom;
+            in = new DataInputStream(
+                    clientSocket.getInputStream());
+            out = new DataOutputStream(
+                    clientSocket.getOutputStream());
             this.start();
         } catch (IOException e) {
-            droneControlRoom.appendMessage("Connection:" + e.getMessage());
+            System.out.println("Connection:" + e.getMessage());
         }
     }
 
     public void run() {
-        try {
+        try { // an echo server
             String data = in.readUTF();
-            System.out.println(data);
-            if (data.equals("New Drone")) {
-                System.out.println("there is a new drone");
-                ArrayList<Drone> droneList = new ArrayList<>();
-                newDrone(droneList);
+            // System.out.println(data);
+            out.writeUTF("Server received:" + data);
 
-            } else {
-                System.out.println("no new drone found");
-            }
-
-            out.writeUTF("completed");
-            //   droneControlRoom.appendMessage(data);            
         } catch (EOFException e) {
-            droneControlRoom.appendMessage("EOF:" + e.getMessage());
+            System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
-            droneControlRoom.appendMessage("IO:" + e.getMessage());
+            System.out.println("IO:" + e.getMessage());
         } finally {
             try {
                 clientSocket.close();
-            } catch (IOException e) {
+            } catch (IOException e) {/*close failed*/
             }
         }
-
     }
-
-    // This methodes calls for the popups for the user to define the Drones ID, Name and current position. This is then Stored in an Array list
-    public static void newDrone(ArrayList<Drone> droneList) {
-        String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
-        int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
-        int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's X position:", "Drone X Position", JOptionPane.QUESTION_MESSAGE));
-        int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's Y position:", "Drone Y Position", JOptionPane.QUESTION_MESSAGE));
-        Drone newDrone = new Drone(droneID, droneName, posX, posY);
-        droneList.add(newDrone);
-        DroneControllRoom classObj = new DroneControllRoom();
-        classObj.addMessage("New Drone " + droneName + " Has been added!");
-
-    }
-
 }
