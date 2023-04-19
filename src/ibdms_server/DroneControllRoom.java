@@ -16,6 +16,9 @@ import javax.swing.*;
 
 public class DroneControllRoom extends JPanel {
 
+    // crating a styatic Vasriable as a static field so i can use the methodes from this class in the cennection class
+    static DroneControllRoom droneControllRoom;
+
     //Creates an Object array to store the drone details for further usage in the app
     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
 
@@ -90,6 +93,9 @@ public class DroneControllRoom extends JPanel {
     }
 
     public static void createAndShowGUI() {
+
+        droneControllRoom = new DroneControllRoom();
+
         ArrayList<String> droneList = new ArrayList<String>();
         droneList.add("Drone 1");
         droneList.add("Drone 2");
@@ -230,7 +236,7 @@ public class DroneControllRoom extends JPanel {
             ServerSocket listenSocket = new ServerSocket(serverPort);
             while (true) {
                 Socket clientSocket = listenSocket.accept();
-                Connection c = new Connection(clientSocket, messageOutputText);
+                Connection c = new Connection(clientSocket, messageOutputText, droneControllRoom);
                 System.out.printf("\nServer waiting on: %d for client from %d ",
                         listenSocket.getLocalPort(), clientSocket.getPort());
             }
@@ -248,13 +254,15 @@ class Connection extends Thread {
     DataOutputStream out;
     Socket clientSocket;
     JTextArea messageOutputText;
+    DroneControllRoom droneControllRoom;
 
-    public Connection(Socket aClientSocket, JTextArea messageOutputText) {
+    public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom) {
         try {
             clientSocket = aClientSocket;
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
             this.messageOutputText = messageOutputText;
+            this.droneControllRoom = droneControllRoom;
             this.start();
         } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
@@ -267,6 +275,7 @@ class Connection extends Thread {
             out.writeUTF("Server received:" + data);
             System.out.println(data);
             addMessage(data);
+            droneControllRoom.newDrone();
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
