@@ -16,8 +16,19 @@ import javax.swing.*;
 
 public class DroneControllRoom extends JPanel {
 
+    //Creates an Object array to store the drone details for further usage in the app
     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
-    // Create new Drone objects
+
+    //methode to invoke pupups for the user to enter the conected drone details and then add them to the droneListArray    
+    public void newDrone() {
+        String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
+        int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
+        int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's X position:", "Drone X Position", JOptionPane.QUESTION_MESSAGE));
+        int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's Y position:", "Drone Y Position", JOptionPane.QUESTION_MESSAGE));
+        Drone newDrone = new Drone(droneID, droneName, posX, posY);
+        droneListArray.add(newDrone);
+
+    }
 
 // Add Drone objects to the ArrayList
     private Image backgroundImage;
@@ -36,6 +47,7 @@ public class DroneControllRoom extends JPanel {
 
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
+
         Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
         Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
 
@@ -214,12 +226,11 @@ public class DroneControllRoom extends JPanel {
         frame.setVisible(true);
 
         try {
-
             int serverPort = 7896;
             ServerSocket listenSocket = new ServerSocket(serverPort);
             while (true) {
                 Socket clientSocket = listenSocket.accept();
-                Connection c = new Connection(clientSocket);
+                Connection c = new Connection(clientSocket, messageOutputText);
                 System.out.printf("\nServer waiting on: %d for client from %d ",
                         listenSocket.getLocalPort(), clientSocket.getPort());
             }
@@ -236,14 +247,14 @@ class Connection extends Thread {
     DataInputStream in;
     DataOutputStream out;
     Socket clientSocket;
+    JTextArea messageOutputText;
 
-    public Connection(Socket aClientSocket) {
+    public Connection(Socket aClientSocket, JTextArea messageOutputText) {
         try {
             clientSocket = aClientSocket;
-            in = new DataInputStream(
-                    clientSocket.getInputStream());
-            out = new DataOutputStream(
-                    clientSocket.getOutputStream());
+            in = new DataInputStream(clientSocket.getInputStream());
+            out = new DataOutputStream(clientSocket.getOutputStream());
+            this.messageOutputText = messageOutputText;
             this.start();
         } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
@@ -251,12 +262,11 @@ class Connection extends Thread {
     }
 
     public void run() {
-        try { // an echo server
+        try {
             String data = in.readUTF();
-            // System.out.println(data);
             out.writeUTF("Server received:" + data);
             System.out.println(data);
-
+            addMessage(data);
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
@@ -264,8 +274,14 @@ class Connection extends Thread {
         } finally {
             try {
                 clientSocket.close();
-            } catch (IOException e) {/*close failed*/
+            } catch (IOException e) {
+                // ignore exception
             }
         }
     }
+
+    public void addMessage(String message) {
+        messageOutputText.append(message + "\n");
+    }
+
 }
