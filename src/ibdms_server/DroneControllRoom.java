@@ -31,8 +31,10 @@ public class DroneControllRoom extends JPanel {
         Drone newDrone = new Drone(droneID, droneName, posX, posY);
         droneListArray.add(newDrone); 
         updateDroneListDisplay(droneListDisplay);
+        repaint();
         }
     
+    // this methode retrieves the drone names from the droneListArray so i can pass it tro the JComboBox
      public String[] getDroneNames() {
         String[] names = new String[droneListArray.size()];
         for (int i = 0; i < droneListArray.size(); i++) {
@@ -68,13 +70,6 @@ public class DroneControllRoom extends JPanel {
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
 
-//        Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
-//        Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
-
-        // Add Drone objects to the ArrayList
-//        droneListArray.add(drone1);
-//        droneListArray.add(drone2);
-
         int index = 0;
 
         while (index < droneListArray.size()) {
@@ -83,10 +78,13 @@ public class DroneControllRoom extends JPanel {
             int posX = drone.getPosX();
             int posY = drone.getPosY();
 
-            g.setFont(new Font("Arial", Font.PLAIN, 10));
-            g.drawString(name, posX, posY);
-            g.fillRect(300, 200, 50, 25);
+            g.setColor(Color.BLUE);
+            g.fillRect(posX, posY, 50, 25);
             g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 10));
+            g.drawString(name, posX, posY+15);
+            
+            
 
             index++;
         }
@@ -156,7 +154,7 @@ public class DroneControllRoom extends JPanel {
 
         // Add the left side panel and DroneControllRoom panel to the frame
         frame.add(leftPanel, BorderLayout.WEST);
-        frame.add(new DroneControllRoom(), BorderLayout.CENTER);
+        frame.add(droneControllRoom, BorderLayout.CENTER);
 
         // Creating Controll interface  Laytout
         GridBagConstraints gbc = new GridBagConstraints();
@@ -291,8 +289,9 @@ class Connection extends Thread {
             String data = in.readUTF();
             out.writeUTF("Server received:" + data);
             System.out.println(data);
-            addMessage(data);
+            addMessage(data + " Connected!");
             droneControllRoom.newDrone(droneListDisplay);
+            droneControllRoom.repaint();
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
