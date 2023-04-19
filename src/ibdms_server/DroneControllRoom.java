@@ -22,15 +22,32 @@ public class DroneControllRoom extends JPanel {
     //Creates an Object array to store the drone details for further usage in the app
     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
 
-    //methode to invoke pupups for the user to enter the conected drone details and then add them to the droneListArray    
-    public void newDrone() {
+    //methode to invoke pupups for the user to enter the conected drone details and then add them to the droneListArray. Then it follows by invoking the methode to update the JComboList in the GUI for the drones    
+    public void newDrone(JComboBox<String> droneListDisplay) {
         String droneName = JOptionPane.showInputDialog(null, "Please enter the drone name:", "Drone Name", JOptionPane.QUESTION_MESSAGE);
         int droneID = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone ID:", "Drone ID", JOptionPane.QUESTION_MESSAGE));
         int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's X position:", "Drone X Position", JOptionPane.QUESTION_MESSAGE));
         int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's Y position:", "Drone Y Position", JOptionPane.QUESTION_MESSAGE));
         Drone newDrone = new Drone(droneID, droneName, posX, posY);
-        droneListArray.add(newDrone);
+        droneListArray.add(newDrone); 
+        updateDroneListDisplay(droneListDisplay);
+        }
+    
+     public String[] getDroneNames() {
+        String[] names = new String[droneListArray.size()];
+        for (int i = 0; i < droneListArray.size(); i++) {
+            names[i] = droneListArray.get(i).getName();
+        }
+        return names;
+    }
 
+     // Methode to update the list displayed in the drone JComboBox in the GUI
+    public void updateDroneListDisplay(JComboBox<String> droneListDisplay) {
+        droneListDisplay.removeAllItems();
+        String[] droneNames = getDroneNames();
+        for (String droneName : droneNames) {
+            droneListDisplay.addItem(droneName);
+        }
     }
 
 // Add Drone objects to the ArrayList
@@ -51,12 +68,12 @@ public class DroneControllRoom extends JPanel {
         // Draw the background image
         g.drawImage(backgroundImage, 0, 0, null);
 
-        Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
-        Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
+//        Drone drone1 = new Drone(1234, "Drone 1", 100, 200);
+//        Drone drone2 = new Drone(5678, "Drone 2", 300, 400);
 
         // Add Drone objects to the ArrayList
-        droneListArray.add(drone1);
-        droneListArray.add(drone2);
+//        droneListArray.add(drone1);
+//        droneListArray.add(drone2);
 
         int index = 0;
 
@@ -96,10 +113,7 @@ public class DroneControllRoom extends JPanel {
 
         droneControllRoom = new DroneControllRoom();
 
-        ArrayList<String> droneList = new ArrayList<String>();
-        droneList.add("Drone 1");
-        droneList.add("Drone 2");
-        droneList.add("Drone 3");
+
 
         ArrayList<String> fireList = new ArrayList<String>();
         fireList.add("Fire1");
@@ -128,7 +142,8 @@ public class DroneControllRoom extends JPanel {
         JSeparator separator = new JSeparator();
         JSeparator separator2 = new JSeparator();
 
-        JComboBox<String> droneListDisplay = new JComboBox<String>(droneList.toArray(new String[0]));
+        JComboBox<String> droneListDisplay = new JComboBox<String>(droneControllRoom.getDroneNames());
+        
         JComboBox<String> fireListDisplay = new JComboBox<String>(fireList.toArray(new String[0]));
 
         JFrame frame = new JFrame("Display Objects on Background");
@@ -236,7 +251,7 @@ public class DroneControllRoom extends JPanel {
             ServerSocket listenSocket = new ServerSocket(serverPort);
             while (true) {
                 Socket clientSocket = listenSocket.accept();
-                Connection c = new Connection(clientSocket, messageOutputText, droneControllRoom);
+                Connection c = new Connection(clientSocket, messageOutputText, droneControllRoom, droneListDisplay);
                 System.out.printf("\nServer waiting on: %d for client from %d ",
                         listenSocket.getLocalPort(), clientSocket.getPort());
             }
@@ -255,14 +270,16 @@ class Connection extends Thread {
     Socket clientSocket;
     JTextArea messageOutputText;
     DroneControllRoom droneControllRoom;
+    JComboBox<String> droneListDisplay;
 
-    public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom) {
+    public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom, JComboBox<String> droneListDisplay) {
         try {
             clientSocket = aClientSocket;
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
             this.messageOutputText = messageOutputText;
             this.droneControllRoom = droneControllRoom;
+            this.droneListDisplay = droneListDisplay;
             this.start();
         } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
@@ -275,7 +292,7 @@ class Connection extends Thread {
             out.writeUTF("Server received:" + data);
             System.out.println(data);
             addMessage(data);
-            droneControllRoom.newDrone();
+            droneControllRoom.newDrone(droneListDisplay);
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
