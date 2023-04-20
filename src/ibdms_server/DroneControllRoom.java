@@ -310,10 +310,18 @@ class Connection extends Thread {
                     Drone newDrone = droneControllRoom.droneListArray.get(droneControllRoom.droneListArray.size() - 1);
 
                     // Send the drone properties as individual messages
-                    out.writeInt(newDrone.getID());
                     out.writeUTF("Drone Name: " + newDrone.getName());
+                    System.out.println("Sending Drone Name: " + newDrone.getName());
+
+                    out.writeInt(newDrone.getID());
+                    System.out.println("Sending Drone ID: " + newDrone.getID());
+
                     out.writeInt(newDrone.getPosX());
+                    System.out.println("Sending Drone Position X: " + newDrone.getPosX());
+
                     out.writeInt(newDrone.getPosY());
+                    System.out.println("Sending Drone Position Y: " + newDrone.getPosY());
+
                 } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
@@ -328,25 +336,25 @@ class Connection extends Thread {
                     }
                 }
             }
-
-            while (keepRunning) {
-                data = in.readUTF();
-                // added this line for my own debunging 
-                System.out.println("Received data: " + data);
-                if ("shutdown".equalsIgnoreCase(data)) {
-                    keepRunning = false;
-                } else {
-                    System.out.println("Message Received: " + data);
-                    if (data.startsWith("DroneUpdate:")) {
-                        String[] parts = data.substring("DroneUpdate:".length()).split(",");
-                        int id = Integer.parseInt(parts[0].trim());
-                        int posX = Integer.parseInt(parts[1].trim());
-                        int posY = Integer.parseInt(parts[2].trim());
-                        updateDronePosition(id, posX, posY);
-                        droneControllRoom.repaint();
-                    }
-                }
-            }
+//
+//            while (keepRunning) {
+//                data = in.readUTF();
+//                // added this line for my own debunging 
+//                System.out.println("Received data: " + data);
+//                if ("shutdown".equalsIgnoreCase(data)) {
+//                    keepRunning = false;
+//                } else {
+//                    System.out.println("Message Received: " + data);
+//                    if (data.startsWith("DroneUpdate:")) {
+//                        String[] parts = data.substring("DroneUpdate:".length()).split(",");
+//                        int id = Integer.parseInt(parts[0].trim());
+//                        int posX = Integer.parseInt(parts[1].trim());
+//                        int posY = Integer.parseInt(parts[2].trim());
+//                        updateDronePosition(id, posX, posY);
+//                        droneControllRoom.repaint();
+//                    }
+//                }
+//            }
 
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
@@ -372,7 +380,8 @@ class Connection extends Thread {
     }
 
     public void addMessage(String message) {
-        messageOutputText.append(message + "\n");
+        synchronized (messageOutputText) {
+            messageOutputText.append(message + "\n");
+        }
     }
-
 }
