@@ -7,6 +7,8 @@ import java.io.*;
  *
  * @author Nighthawk
  */
+
+// Serrializable makes it possible to serialize and send this class object to the client
 public class Drone implements Serializable{
     
    private int ID;

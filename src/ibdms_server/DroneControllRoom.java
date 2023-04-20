@@ -277,9 +277,11 @@ class Connection extends Thread {
     JTextArea messageOutputText;
     DroneControllRoom droneControllRoom;
     JComboBox<String> droneListDisplay;
+    private boolean keepRunning;
 
     public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom, JComboBox<String> droneListDisplay) {
         try {
+            keepRunning = true;
             clientSocket = aClientSocket;
             in = new DataInputStream(clientSocket.getInputStream());
             out = new DataOutputStream(clientSocket.getOutputStream());
@@ -300,6 +302,35 @@ class Connection extends Thread {
             addMessage(data + " Connected!");
             droneControllRoom.newDrone(droneListDisplay);
             droneControllRoom.repaint();
+
+            // retrieves the latest drone added to the list
+            Drone newDrone = droneControllRoom.droneListArray.get(droneControllRoom.droneListArray.size() - 1);
+
+            // Send the drone properties as individual messages
+            out.writeInt(newDrone.getID());
+            out.writeUTF("Drone Name: " + newDrone.getName());
+            out.writeInt(newDrone.getPosX());
+            out.writeInt(newDrone.getPosY());
+
+            while (keepRunning) {
+                data = in.readUTF();
+                // added this line for my own debunging 
+                System.out.println("Received data: " + data);
+                if ("shutdown".equalsIgnoreCase(data)) {
+                    keepRunning = false;
+                } else {
+                    System.out.println("Message Received: " + data);
+                    if (data.startsWith("DroneUpdate:")) {
+                        String[] parts = data.substring("DroneUpdate:".length()).split(",");
+                        int id = Integer.parseInt(parts[0].trim());
+                        int posX = Integer.parseInt(parts[1].trim());
+                        int posY = Integer.parseInt(parts[2].trim());
+                        updateDronePosition(id, posX, posY);
+                        droneControllRoom.repaint();
+                    }
+                }
+            }
+
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());
         } catch (IOException e) {
@@ -308,7 +339,17 @@ class Connection extends Thread {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                // ignore exception
+
+            }
+        }
+    }
+
+    private void updateDronePosition(int id, int posX, int posY) {
+        for (Drone drone : droneControllRoom.droneListArray) {
+            if (drone.getID() == id) {
+                drone.setPosX(posX);
+                drone.setPosY(posY);
+                break;
             }
         }
     }
