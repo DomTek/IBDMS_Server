@@ -5,6 +5,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.*;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -29,13 +31,13 @@ public class DroneControllRoom extends JPanel {
         int posX = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's X position:", "Drone X Position", JOptionPane.QUESTION_MESSAGE));
         int posY = Integer.parseInt(JOptionPane.showInputDialog(null, "Please enter the drone's Y position:", "Drone Y Position", JOptionPane.QUESTION_MESSAGE));
         Drone newDrone = new Drone(droneID, droneName, posX, posY);
-        droneListArray.add(newDrone); 
+        droneListArray.add(newDrone);
         updateDroneListDisplay(droneListDisplay);
         repaint();
-        }
-    
+    }
+
     // this methode retrieves the drone names from the droneListArray so i can pass it tro the JComboBox
-     public String[] getDroneNames() {
+    public String[] getDroneNames() {
         String[] names = new String[droneListArray.size()];
         for (int i = 0; i < droneListArray.size(); i++) {
             names[i] = droneListArray.get(i).getName();
@@ -43,7 +45,7 @@ public class DroneControllRoom extends JPanel {
         return names;
     }
 
-     // Methode to update the list displayed in the drone JComboBox in the GUI
+    // Methode to update the list displayed in the drone JComboBox in the GUI
     public void updateDroneListDisplay(JComboBox<String> droneListDisplay) {
         droneListDisplay.removeAllItems();
         String[] droneNames = getDroneNames();
@@ -82,9 +84,7 @@ public class DroneControllRoom extends JPanel {
             g.fillRect(posX, posY, 50, 25);
             g.setColor(Color.WHITE);
             g.setFont(new Font("Arial", Font.PLAIN, 10));
-            g.drawString(name, posX, posY+15);
-            
-            
+            g.drawString(name, posX, posY + 15);
 
             index++;
         }
@@ -110,8 +110,6 @@ public class DroneControllRoom extends JPanel {
     public static void createAndShowGUI() {
 
         droneControllRoom = new DroneControllRoom();
-
-
 
         ArrayList<String> fireList = new ArrayList<String>();
         fireList.add("Fire1");
@@ -141,7 +139,7 @@ public class DroneControllRoom extends JPanel {
         JSeparator separator2 = new JSeparator();
 
         JComboBox<String> droneListDisplay = new JComboBox<String>(droneControllRoom.getDroneNames());
-        
+
         JComboBox<String> fireListDisplay = new JComboBox<String>(fireList.toArray(new String[0]));
 
         JFrame frame = new JFrame("Display Objects on Background");
@@ -243,6 +241,16 @@ public class DroneControllRoom extends JPanel {
 
         frame.pack();
         frame.setVisible(true);
+
+        // this code will update the Map every 10 seconds. currently only updating the drone locations using the updateDroneListDisplay methode
+        int updateInterval = 10000; // 10 seconds intervall created for the update to run. This number is set as milli seconds
+        ActionListener updateDroneListAction = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                droneControllRoom.updateDroneListDisplay(droneListDisplay);
+            }
+        };
+        Timer updateDroneListTimer = new Timer(updateInterval, updateDroneListAction);
+        updateDroneListTimer.start();
 
         try {
             int serverPort = 7896;
