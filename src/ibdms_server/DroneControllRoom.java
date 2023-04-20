@@ -296,21 +296,38 @@ class Connection extends Thread {
 
     public void run() {
         try {
-            String data = in.readUTF();
-            out.writeUTF("Server received:" + data);
-            System.out.println(data);
-            addMessage(data + " Connected!");
-            droneControllRoom.newDrone(droneListDisplay);
-            droneControllRoom.repaint();
+            String data;
+            while (keepRunning) {
+                data = in.readUTF();
+                if ("New Drone".equalsIgnoreCase(data)) {
+                    out.writeUTF("Server received:" + data);
+                    System.out.println(data);
+                    addMessage(data + " Connected!");
+                    droneControllRoom.newDrone(droneListDisplay);
+                    droneControllRoom.repaint();
 
-            // retrieves the latest drone added to the list
-            Drone newDrone = droneControllRoom.droneListArray.get(droneControllRoom.droneListArray.size() - 1);
+                    // retrieves the latest drone added to the list
+                    Drone newDrone = droneControllRoom.droneListArray.get(droneControllRoom.droneListArray.size() - 1);
 
-            // Send the drone properties as individual messages
-            out.writeInt(newDrone.getID());
-            out.writeUTF("Drone Name: " + newDrone.getName());
-            out.writeInt(newDrone.getPosX());
-            out.writeInt(newDrone.getPosY());
+                    // Send the drone properties as individual messages
+                    out.writeInt(newDrone.getID());
+                    out.writeUTF("Drone Name: " + newDrone.getName());
+                    out.writeInt(newDrone.getPosX());
+                    out.writeInt(newDrone.getPosY());
+                } else if ("shutdown".equalsIgnoreCase(data)) {
+                    keepRunning = false;
+                } else {
+                    System.out.println("Message Received: " + data);
+                    if (data.startsWith("DroneUpdate:")) {
+                        String[] parts = data.substring("DroneUpdate:".length()).split(",");
+                        int id = Integer.parseInt(parts[0].trim());
+                        int posX = Integer.parseInt(parts[1].trim());
+                        int posY = Integer.parseInt(parts[2].trim());
+                        updateDronePosition(id, posX, posY);
+                        droneControllRoom.repaint();
+                    }
+                }
+            }
 
             while (keepRunning) {
                 data = in.readUTF();
