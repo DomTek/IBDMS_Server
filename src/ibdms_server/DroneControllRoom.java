@@ -23,6 +23,7 @@ public class DroneControllRoom extends JPanel {
 
     //Creates an Object array to store the drone details for further usage in the app
     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
+    ArrayList<Fire> fireListArray = new ArrayList<Fire>();
 
     //methode to invoke pupups for the user to enter the conected drone details and then add them to the droneListArray. Then it follows by invoking the methode to update the JComboList in the GUI for the drones    
     public void newDrone(JComboBox<String> droneListDisplay) {
@@ -34,6 +35,23 @@ public class DroneControllRoom extends JPanel {
         droneListArray.add(newDrone);
         updateDroneListDisplay(droneListDisplay);
         repaint();
+    }
+
+    public void addFire(JComboBox<String> fireListDisplay) {
+        int ID = 1;
+        int posX = 250;
+        int posY = 250;
+        Fire newFIre = new Fire(ID, posX, posY);
+        fireListArray.add(newFIre);
+
+    }
+
+    public Integer[] getFireIds() {
+        Integer[] fireIds = new Integer[fireListArray.size()];
+        for (int i = 0; i < fireListArray.size(); i++) {
+            fireIds[i] = fireListArray.get(i).getID();
+        }
+        return fireIds;
     }
 
     // this methode retrieves the drone names from the droneListArray so i can pass it tro the JComboBox
@@ -110,13 +128,9 @@ public class DroneControllRoom extends JPanel {
     public static void createAndShowGUI() {
 
         droneControllRoom = new DroneControllRoom();
-        
-        //Creates a dummy list of fires
-        ArrayList<String> fireList = new ArrayList<String>();
-        fireList.add("Fire1");
-        fireList.add("Fire2");
-        fireList.add("Fire3");
 
+        //Creates a dummy list of fires
+//        ArrayList<String> fireList = new ArrayList<String>();
         // creating all button labels and input elements
         JLabel title = new JLabel("Controll Room");
         JLabel droneSelectLable = new JLabel("Select Drone");
@@ -141,7 +155,7 @@ public class DroneControllRoom extends JPanel {
 
         JComboBox<String> droneListDisplay = new JComboBox<String>(droneControllRoom.getDroneNames());
 
-        JComboBox<String> fireListDisplay = new JComboBox<String>(fireList.toArray(new String[0]));
+        JComboBox<Integer> fireListDisplay = new JComboBox<>(droneControllRoom.getFireIds());
 
         JFrame frame = new JFrame("Display Objects on Background");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -339,7 +353,7 @@ class Connection extends Thread {
                     System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
                     updateDronePosition(id, posX, posY);
                     droneControllRoom.repaint();
-                    
+
                 } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
