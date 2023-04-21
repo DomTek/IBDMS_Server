@@ -37,13 +37,10 @@ public class DroneControllRoom extends JPanel {
         repaint();
     }
 
-    public void addFire(JComboBox<String> fireListDisplay) {
-        int ID = 1;
-        int posX = 250;
-        int posY = 250;
-        Fire newFIre = new Fire(ID, posX, posY);
-        fireListArray.add(newFIre);
-
+    public void addFire(JComboBox<Integer> fireListDisplay, int ID, int posX, int posY) {
+        Fire newFire = new Fire(ID, posX, posY);
+        fireListArray.add(newFire);
+        updateFireListDisplay(fireListDisplay);
     }
 
     public Integer[] getFireIds() {
@@ -52,6 +49,14 @@ public class DroneControllRoom extends JPanel {
             fireIds[i] = fireListArray.get(i).getID();
         }
         return fireIds;
+    }
+
+    public void updateFireListDisplay(JComboBox<Integer> fireListDisplay) {
+        fireListDisplay.removeAllItems();
+        Integer[] fireIds = getFireIds();
+        for (Integer fireId : fireIds) {
+            fireListDisplay.addItem(fireId);
+        }
     }
 
     // this methode retrieves the drone names from the droneListArray so i can pass it tro the JComboBox
@@ -106,8 +111,17 @@ public class DroneControllRoom extends JPanel {
 
             index++;
         }
+        // Draw a red circle with text on the background image used with the fireDisplayArray
+        for (Fire fire : fireListArray) {
+            int firePosX = fire.getPosX();
+            int firePosY = fire.getPosY();
+            g.setColor(Color.RED);
+            g.fillOval(firePosX, firePosY, 50, 50);
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g.drawString("Fire", firePosX + 5, firePosY + 30);
+        }
 
-// Draw a red circle with text on the background image
         g.setColor(Color.RED);
         g.fillOval(350, 300, 50, 50);
         g.setColor(Color.WHITE);
@@ -123,6 +137,8 @@ public class DroneControllRoom extends JPanel {
     public static void main(String[] args) {
 
         createAndShowGUI();
+        
+
     }
 
     public static void createAndShowGUI() {
@@ -156,6 +172,11 @@ public class DroneControllRoom extends JPanel {
         JComboBox<String> droneListDisplay = new JComboBox<String>(droneControllRoom.getDroneNames());
 
         JComboBox<Integer> fireListDisplay = new JComboBox<>(droneControllRoom.getFireIds());
+        
+        droneControllRoom.addFire(fireListDisplay, 1, 250, 250);
+        droneControllRoom.addFire(fireListDisplay, 2, 300, 250);
+        droneControllRoom.addFire(fireListDisplay, 3, 200, 250);
+        
 
         JFrame frame = new JFrame("Display Objects on Background");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -172,7 +193,6 @@ public class DroneControllRoom extends JPanel {
         // Creating Controll interface  Laytout
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
-
         gbc.gridx = 0;
         gbc.gridy = 0;
         leftPanel.add(title, gbc);
@@ -312,6 +332,7 @@ class Connection extends Thread {
     public void run() {
         try {
             String data;
+
             while (keepRunning) {
                 data = in.readUTF();
                 if ("New Drone".equalsIgnoreCase(data)) {
@@ -336,15 +357,9 @@ class Connection extends Thread {
 
                     out.writeInt(newDrone.getPosY());
                     System.out.println("Sending Drone Position Y: " + newDrone.getPosY());
+                    
 
-                    // Update the drone's position in the server and user interface map.
-//                } else if (data.equalsIgnoreCase("Update Position")) {
-//                    int id = in.readInt();
-//                    int posX = in.readInt();
-//                    int posY = in.readInt();
-//                    System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
-//                    
-//                }
+
                 } else if (data.startsWith("DroneUpdate:")) {
                     String[] parts = data.substring("DroneUpdate:".length()).split(",");
                     int id = Integer.parseInt(parts[0].trim());
@@ -353,6 +368,7 @@ class Connection extends Thread {
                     System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
                     updateDronePosition(id, posX, posY);
                     droneControllRoom.repaint();
+                    
 
                 } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
