@@ -2,19 +2,17 @@ package ibdms_server;
 
 import java.io.*;
 
-
 /**
  *
  * @author Nighthawk
  */
-
 // Serrializable makes it possible to serialize and send this class object to the client
-public class Drone implements Serializable{
-    
-   private int ID;
-   private String name;
-   private int posX;
-   private int posY;    
+public class Drone implements Serializable {
+
+    private int ID;
+    private String name;
+    private int posX;
+    private int posY;
 
     public Drone(int ID, String name, int posX, int posY) {
         this.ID = ID;
@@ -23,8 +21,10 @@ public class Drone implements Serializable{
         this.posY = posY;
     }
 
-   
-   
+    public boolean isAtFire(Fire fire) {
+        return this.posX == fire.getPosX() && this.posY == fire.getPosY();
+    }
+
     public int getID() {
         return ID;
     }
@@ -56,5 +56,5 @@ public class Drone implements Serializable{
     public void setPosY(int posY) {
         this.posY = posY;
     }
-    
+
 }

@@ -20,6 +20,7 @@ public class DroneControllRoom extends JPanel {
 
     // crating a styatic Vasriable as a static field so i can use the methodes from this class in the cennection class
     static DroneControllRoom droneControllRoom;
+    private Connection connection;
 
     //Creates an Object array to store the drone details for further usage in the app
     ArrayList<Drone> droneListArray = new ArrayList<Drone>();
@@ -77,7 +78,20 @@ public class DroneControllRoom extends JPanel {
         }
     }
 
-// Add Drone objects to the ArrayList
+    public boolean isDroneNearFire(int dronePosX, int dronePosY, int range) {
+        for (Fire fire : fireListArray) {
+            int firePosX = fire.getPosX();
+            int firePosY = fire.getPosY();
+            int distanceX = Math.abs(dronePosX - firePosX);
+            int distanceY = Math.abs(dronePosY - firePosY);
+
+            if (distanceX <= range && distanceY <= range) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Image backgroundImage;
 
     public DroneControllRoom() {
@@ -137,14 +151,13 @@ public class DroneControllRoom extends JPanel {
     public static void main(String[] args) {
 
         createAndShowGUI();
-        
 
     }
 
     public static void createAndShowGUI() {
 
         droneControllRoom = new DroneControllRoom();
-
+       
         //Creates a dummy list of fires
 //        ArrayList<String> fireList = new ArrayList<String>();
         // creating all button labels and input elements
@@ -172,11 +185,33 @@ public class DroneControllRoom extends JPanel {
         JComboBox<String> droneListDisplay = new JComboBox<String>(droneControllRoom.getDroneNames());
 
         JComboBox<Integer> fireListDisplay = new JComboBox<>(droneControllRoom.getFireIds());
-        
+
         droneControllRoom.addFire(fireListDisplay, 1, 250, 250);
         droneControllRoom.addFire(fireListDisplay, 2, 300, 250);
         droneControllRoom.addFire(fireListDisplay, 3, 200, 250);
-        
+
+        // Functions for the Shut down Button
+        ShutDownB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                System.exit(0);
+            }
+        });
+
+        ReturnB.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+        // Use the connection reference to call sendReturnToClient
+        droneControllRoom.connection.sendReturnToClient();
+    }
+});
+
+        removeFireB.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 
         JFrame frame = new JFrame("Display Objects on Background");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -292,7 +327,7 @@ public class DroneControllRoom extends JPanel {
             ServerSocket listenSocket = new ServerSocket(serverPort);
             while (true) {
                 Socket clientSocket = listenSocket.accept();
-                Connection c = new Connection(clientSocket, messageOutputText, droneControllRoom, droneListDisplay);
+                Connection c = new Connection(clientSocket, messageOutputText, droneControllRoom, droneListDisplay, ReturnB);
                 System.out.printf("\nServer waiting on: %d for client from %d ",
                         listenSocket.getLocalPort(), clientSocket.getPort());
             }
@@ -312,9 +347,10 @@ class Connection extends Thread {
     JTextArea messageOutputText;
     DroneControllRoom droneControllRoom;
     JComboBox<String> droneListDisplay;
+    JButton ReturnB;
     private boolean keepRunning;
 
-    public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom, JComboBox<String> droneListDisplay) {
+    public Connection(Socket aClientSocket, JTextArea messageOutputText, DroneControllRoom droneControllRoom, JComboBox<String> droneListDisplay, JButton ReturnB) {
         try {
             keepRunning = true;
             clientSocket = aClientSocket;
@@ -323,6 +359,7 @@ class Connection extends Thread {
             this.messageOutputText = messageOutputText;
             this.droneControllRoom = droneControllRoom;
             this.droneListDisplay = droneListDisplay;
+            this.ReturnB = ReturnB;
             this.start();
         } catch (IOException e) {
             System.out.println("Connection:" + e.getMessage());
@@ -357,8 +394,6 @@ class Connection extends Thread {
 
                     out.writeInt(newDrone.getPosY());
                     System.out.println("Sending Drone Position Y: " + newDrone.getPosY());
-                    
-
 
                 } else if (data.startsWith("DroneUpdate:")) {
                     String[] parts = data.substring("DroneUpdate:".length()).split(",");
@@ -368,8 +403,10 @@ class Connection extends Thread {
                     System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
                     updateDronePosition(id, posX, posY);
                     droneControllRoom.repaint();
-                    
 
+                } else if ("Returning Home".equalsIgnoreCase(data)) {
+                    messageOutputText.setText(null);
+                    addMessage(data);
                 } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
@@ -403,6 +440,12 @@ class Connection extends Thread {
             if (drone.getID() == id) {
                 drone.setPosX(posX);
                 drone.setPosY(posY);
+
+                // Check if the drone is near a fire (within a specific range)
+                int fireDetectionRange = 50;
+                if (droneControllRoom.isDroneNearFire(posX, posY, fireDetectionRange)) {
+                    addMessage("Drone " + drone.getName() + " (ID: " + drone.getID() + ") detected a fire at position (" + posX + ", " + posY + ")");
+                }
                 break;
             }
         }
@@ -411,6 +454,20 @@ class Connection extends Thread {
     public void addMessage(String message) {
         synchronized (messageOutputText) {
             messageOutputText.append(message + "\n");
+        }
+    }
+
+    private void sendDataToClient(String data) throws IOException {
+        out.writeUTF(data);
+        out.flush();
+    }
+
+    public void sendReturnToClient() {
+        try {
+            sendDataToClient("return");
+            System.out.println("return message sent");
+        } catch (IOException e) {
+            System.out.println("Error sending 'return' to client: " + e.getMessage());
         }
     }
 }
