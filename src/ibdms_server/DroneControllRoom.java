@@ -323,15 +323,22 @@ class Connection extends Thread {
                     System.out.println("Sending Drone Position Y: " + newDrone.getPosY());
 
                     // Update the drone's position in the server and user interface map.
-                } else if (data.equalsIgnoreCase("Update Position")) {
-                    int id = in.readInt();
-                    int posX = in.readInt();
-                    int posY = in.readInt();
+//                } else if (data.equalsIgnoreCase("Update Position")) {
+//                    int id = in.readInt();
+//                    int posX = in.readInt();
+//                    int posY = in.readInt();
+//                    System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
+//                    
+//                }
+                } else if (data.startsWith("DroneUpdate:")) {
+                    String[] parts = data.substring("DroneUpdate:".length()).split(",");
+                    int id = Integer.parseInt(parts[0].trim());
+                    int posX = Integer.parseInt(parts[1].trim());
+                    int posY = Integer.parseInt(parts[2].trim());
                     System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
-                    
-                }
-                
-                else if ("shutdown".equalsIgnoreCase(data)) {
+                    updateDronePosition(id, posX, posY);
+                    droneControllRoom.repaint();
+                } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
                     System.out.println("Message Received: " + data);
