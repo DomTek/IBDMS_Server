@@ -110,7 +110,8 @@ public class DroneControllRoom extends JPanel {
     public static void createAndShowGUI() {
 
         droneControllRoom = new DroneControllRoom();
-
+        
+        //Creates a dummy list of fires
         ArrayList<String> fireList = new ArrayList<String>();
         fireList.add("Fire1");
         fireList.add("Fire2");
@@ -338,6 +339,7 @@ class Connection extends Thread {
                     System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
                     updateDronePosition(id, posX, posY);
                     droneControllRoom.repaint();
+                    
                 } else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
