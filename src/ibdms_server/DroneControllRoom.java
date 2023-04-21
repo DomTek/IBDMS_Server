@@ -322,7 +322,16 @@ class Connection extends Thread {
                     out.writeInt(newDrone.getPosY());
                     System.out.println("Sending Drone Position Y: " + newDrone.getPosY());
 
-                } else if ("shutdown".equalsIgnoreCase(data)) {
+                    // Update the drone's position in the server and user interface map.
+                } else if (data.equalsIgnoreCase("Update Position")) {
+                    int id = in.readInt();
+                    int posX = in.readInt();
+                    int posY = in.readInt();
+                    System.out.println("Received position update for drone ID: " + id + ", Position: (" + posX + ", " + posY + ")");
+                    
+                }
+                
+                else if ("shutdown".equalsIgnoreCase(data)) {
                     keepRunning = false;
                 } else {
                     System.out.println("Message Received: " + data);
@@ -336,25 +345,6 @@ class Connection extends Thread {
                     }
                 }
             }
-//
-//            while (keepRunning) {
-//                data = in.readUTF();
-//                // added this line for my own debunging 
-//                System.out.println("Received data: " + data);
-//                if ("shutdown".equalsIgnoreCase(data)) {
-//                    keepRunning = false;
-//                } else {
-//                    System.out.println("Message Received: " + data);
-//                    if (data.startsWith("DroneUpdate:")) {
-//                        String[] parts = data.substring("DroneUpdate:".length()).split(",");
-//                        int id = Integer.parseInt(parts[0].trim());
-//                        int posX = Integer.parseInt(parts[1].trim());
-//                        int posY = Integer.parseInt(parts[2].trim());
-//                        updateDronePosition(id, posX, posY);
-//                        droneControllRoom.repaint();
-//                    }
-//                }
-//            }
 
         } catch (EOFException e) {
             System.out.println("EOF:" + e.getMessage());

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="IBDMS_Server">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/IBDMS_Server.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
